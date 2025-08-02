@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Api\CustomerController;
+
 use Illuminate\Support\Facades\Route;
 
 // use App\Http\Controllers\LoginController;
@@ -11,11 +14,17 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [LoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-        //logout
+    //logout
     Route::post('logout', [LogoutController::class, 'logout']);
+
+    //customers
+    Route::apiResource('customers', CustomerController::class);
+
+    //admins
+    Route::apiResource('admins', AdminController::class);
+    Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 });
-Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
-    // Route::get('profile', [AdminProfileController::class, 'index']);
-});
+// Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
+// });
 //addresses
 // Route::apiResource('addresses', AddressController::class);

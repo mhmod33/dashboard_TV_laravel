@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminStore;
+use App\Http\Requests\AdminUpdate;
 use App\Models\Admin;
 use App\Http\Resources\AdminResource;
 use Illuminate\Http\Request;
@@ -14,17 +16,20 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $allAdmins=Admin::all();
-        $admins=AdminResource::collection($allAdmins);
-        return response()->json(['message'=>'returned all admins','admins'=>$admins]);
+        $allAdmins = Admin::all();
+        $admins = AdminResource::collection($allAdmins);
+        return response()->json(['message' => 'returned all admins', 'admins' => $admins]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(AdminStore $request)
     {
-        //
+        $data = $request->validated();
+        $data['password'] = bcrypt($request->password);
+        $admin = Admin::create($data);
+        return response()->json(['message' => 'created new admin successfully', 'admin' => $admin], 201);
     }
 
     /**
@@ -32,15 +37,24 @@ class AdminController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(['message' => 'this admin is not found']);
+        }
+        $adminData = new AdminResource($admin);
+        return response()->json(['message' => 'returned successfully', 'admin' => $adminData]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(AdminUpdate $request, string $id)
     {
-        //
+        $data = $request->validated();
+        $data['password'] = bcrypt($request->password);
+        $admin = Admin::find($id);
+        $admin->update($data);
+        return response()->json(['message' => 'admin updated successfully', 'admin' => $admin], 201);
     }
 
     /**
@@ -48,6 +62,16 @@ class AdminController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(['message' => 'this admin is not found']);
+        }
+        $admin->delete();
+        return response()->json(['message' => 'deleted successfully!']);
+
+    }
+
+    public function updateBalance()
+    {
     }
 }

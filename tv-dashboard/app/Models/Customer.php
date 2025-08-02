@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Admin;
 class Customer extends Model
 {
     protected $fillable = [
@@ -16,4 +16,7 @@ class Customer extends Model
         'phone',
         'status',
     ];
+    public function admin(){
+        return $this->belongsTo(Admin::class);
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\LogoutController;
 use Illuminate\Support\Facades\Route;
 
 // use App\Http\Controllers\LoginController;
@@ -10,11 +11,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [LoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    //logout
-    // Route::post('logout', [logoutController::class, 'logout']);
-
-   
-
+        //logout
+    Route::post('logout', [LogoutController::class, 'logout']);
 });
 Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
     // Route::get('profile', [AdminProfileController::class, 'index']);

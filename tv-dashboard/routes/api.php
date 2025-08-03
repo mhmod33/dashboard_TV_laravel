@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PeriodController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Api\CustomerController;
@@ -25,8 +26,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('admins', AdminController::class);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
-    //payments
+    //periods
     Route::apiResource('payments', PaymentController::class);
+
+    //periods
+    Route::apiResource('periods', PeriodController::class);
 });
 // Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
 // });

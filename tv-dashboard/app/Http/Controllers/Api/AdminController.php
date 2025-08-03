@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminStore;
 use App\Http\Requests\AdminUpdate;
+use App\Http\Resources\SubadminResource;
 use App\Models\Admin;
 use App\Http\Resources\AdminResource;
+use App\Models\Subadmin;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -45,6 +47,12 @@ class AdminController extends Controller
         return response()->json(['message' => 'returned successfully', 'admin' => $adminData]);
     }
 
+    public function getMySubadmins(){
+        $admin=auth()->user();
+        $subadmins=Subadmin::where('parent_admin_id',$admin->id)->get();
+        $mySubadmins=SubadminResource::collection($subadmins);
+        return response()->json(['message' => 'returned successfully', 'subadmins' => $mySubadmins]);
+    }
     /**
      * Update the specified resource in storage.
      */
@@ -71,6 +79,14 @@ class AdminController extends Controller
 
     }
 
+    public function getMyprofile(){
+        $admin = auth()->user();
+        return response()->json(['message'=>'returned my profile','admin'=>$admin]);
+    }
+    public function getSuperadminProfile(){
+        $superadmin = auth()->user();
+        return response()->json(['message'=>'returned my profile','superadmin'=>$superadmin]);
+    }
     public function updateBalance()
     {
     }

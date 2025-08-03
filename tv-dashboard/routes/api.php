@@ -3,28 +3,41 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PeriodController;
+use App\Http\Controllers\api\SubadminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Api\CustomerController;
 
 use Illuminate\Support\Facades\Route;
 
-// use App\Http\Controllers\LoginController;
-use App\Http\Middleware\checkRole;
+    //auth
+    Route::post('login', [LoginController::class, 'login']);
 
-//auth
-Route::post('login', [LoginController::class, 'login']);
+    Route::middleware('auth:sanctum')->group(function () {
+        //logout
+        Route::post('logout', [LogoutController::class, 'logout']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    //logout
-    Route::post('logout', [LogoutController::class, 'logout']);
+        //customers
+        Route::apiResource('customers', CustomerController::class);
+        
+        //payments
+        Route::apiResource('payments', PaymentController::class);
+        
+        // subadmins
+        Route::apiResource('subadmins', SubadminController::class);
+        Route::get('subadminProfile',[SubadminController::class,'subadminProfile']);
+        
+        Route::get('getMySubadmins',[AdminController::class,'getMySubadmins']);
 
-    //customers
-    Route::apiResource('customers', CustomerController::class);
-    //payments
-    Route::apiResource('payments', PaymentController::class);
-    
-});
+        
+        // subadmin and customers
+        Route::get('myCustomers',[SubadminController::class,'getMyCustomers']);
+        Route::post('myCustomers',[SubadminController::class,'addMyCustomer']);
+        Route::put('myCustomers/{id}',[SubadminController::class,'updateMyCustomer']);
+        Route::delete('myCustomers/{id}',[SubadminController::class,'deleteMyCustomer']);
+
+        
+    });
 
 
     Route::middleware(['auth:sanctum', 'checkRole'])->prefix('superadmin')->group(function () {
@@ -36,5 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('admins', AdminController::class);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
-
+    // myprofile
+    Route::get('superadminProfile',[AdminController::class,'getSuperadminProfile']);
 });

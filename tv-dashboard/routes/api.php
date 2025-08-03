@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\CustomerController;
 use Illuminate\Support\Facades\Route;
 
 // use App\Http\Controllers\LoginController;
-// use App\Http\Middleware\checkRole;
+use App\Http\Middleware\checkRole;
 
 //auth
 Route::post('login', [LoginController::class, 'login']);
@@ -21,18 +21,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //customers
     Route::apiResource('customers', CustomerController::class);
+    //payments
+    Route::apiResource('payments', PaymentController::class);
+    
+});
+
+
+    Route::middleware(['auth:sanctum', 'checkRole'])->prefix('superadmin')->group(function () {
+    
+    //periods
+    Route::apiResource('periods', PeriodController::class);
     
     //admins
     Route::apiResource('admins', AdminController::class);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
-    //periods
-    Route::apiResource('payments', PaymentController::class);
 
-    //periods
-    Route::apiResource('periods', PeriodController::class);
 });
-// Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
-// });
-//addresses
-// Route::apiResource('addresses', AddressController::class);

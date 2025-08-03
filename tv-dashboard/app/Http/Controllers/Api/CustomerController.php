@@ -28,18 +28,6 @@ class CustomerController extends Controller
         $customer = Customer::create($request->validated());
         return response()->json(['message' => 'created successfully', 'new customer', $customer]);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    // public function show(string $id)
-    // {
-    //     //
-    // }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateCustomer $request, string $id)
     {
         $customer = Customer::find($id);

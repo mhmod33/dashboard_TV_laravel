@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Api\CustomerController;
@@ -19,10 +20,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //customers
     Route::apiResource('customers', CustomerController::class);
-
+    
     //admins
     Route::apiResource('admins', AdminController::class);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
+
+    //payments
+    Route::apiResource('payments', PaymentController::class);
 });
 // Route::middleware(['auth:sanctum', 'checkRole'])->prefix('admin')->group(function () {
 // });

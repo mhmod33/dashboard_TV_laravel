@@ -23,6 +23,9 @@ class AdminController extends Controller
         return response()->json(['message' => 'returned all admins', 'admins' => $admins]);
     }
 
+    // public function getAllAdmins(){
+    //     $adminUsers
+    // }
     /**
      * Store a newly created resource in storage.
      */
@@ -47,10 +50,11 @@ class AdminController extends Controller
         return response()->json(['message' => 'returned successfully', 'admin' => $adminData]);
     }
 
-    public function getMySubadmins(){
-        $admin=auth()->user();
-        $subadmins=Subadmin::where('parent_admin_id',$admin->id)->get();
-        $mySubadmins=SubadminResource::collection($subadmins);
+    public function getMySubadmins()
+    {
+        $admin = auth()->user();
+        $subadmins = Subadmin::where('parent_admin_id', $admin->id)->get();
+        $mySubadmins = SubadminResource::collection($subadmins);
         return response()->json(['message' => 'returned successfully', 'subadmins' => $mySubadmins]);
     }
     /**
@@ -79,13 +83,15 @@ class AdminController extends Controller
 
     }
 
-    public function getMyprofile(){
+    public function getMyprofile()
+    {
         $admin = auth()->user();
-        return response()->json(['message'=>'returned my profile','admin'=>$admin]);
+        return response()->json(['message' => 'returned my profile', 'admin' => $admin]);
     }
-    public function getSuperadminProfile(){
+    public function getSuperadminProfile()
+    {
         $superadmin = auth()->user();
-        return response()->json(['message'=>'returned my profile','superadmin'=>$superadmin]);
+        return response()->json(['message' => 'returned my profile', 'superadmin' => $superadmin]);
     }
     public function updateBalance()
     {

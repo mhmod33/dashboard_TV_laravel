@@ -20,6 +20,26 @@ class CustomerController extends Controller
         return response()->json(['message ' => 'returned successfully all customers', 'customers' => $customers]);
     }
 
+    public function activeCustomers()
+    {
+        $active = Customer::where('status', 'active')->get();
+        $activeCustomers = CustomerResource::collection($active);
+
+        return response()->json(['active', $activeCustomers]);
+    }
+    public function expiredCustomers()
+    {
+        $expired = Customer::where('status', 'expired')->get();
+        $expiredCustomers = CustomerResource::collection($expired);
+
+        return response()->json(['expired', $expiredCustomers]);
+    }
+    public function paidCustomers()
+    {
+        $paid = Customer::where('payment_status', 'paid')->get();
+        $paidCustomers = CustomerResource::collection($paid);
+        return response()->json(['paid', $paidCustomers]);
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -55,9 +75,9 @@ class CustomerController extends Controller
     public function deleteAll()
     {
         if (auth()->user()->role != 'superadmin') {
-            return response()->json(['error' => 'Unauthorized'],403);
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
         Customer::turncate();
-        return response()->json(['message' => 'All customers have been deleted.'],200);
+        return response()->json(['message' => 'All customers have been deleted.'], 200);
     }
 }

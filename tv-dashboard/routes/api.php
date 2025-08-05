@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\Route;
 
         //customers
         Route::apiResource('customers', CustomerController::class);
-        
+        Route::get('activeCustomers',[CustomerController::class,'activeCustomers']);
+        Route::get('expiredCustomers',[CustomerController::class,'expiredCustomers']);
+        Route::get('paidCustomers',[CustomerController::class,'paidCustomers']);
         //payments
         Route::apiResource('payments', PaymentController::class);
         
@@ -36,6 +38,7 @@ use Illuminate\Support\Facades\Route;
         Route::put('myCustomers/{id}',[SubadminController::class,'updateMyCustomer']);
         Route::delete('myCustomers/{id}',[SubadminController::class,'deleteMyCustomer']);
 
+
         
     });
 
@@ -47,6 +50,7 @@ use Illuminate\Support\Facades\Route;
     
     //admins
     Route::apiResource('admins', AdminController::class);
+    
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
     // myprofile

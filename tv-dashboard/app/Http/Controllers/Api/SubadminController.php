@@ -9,6 +9,7 @@ use App\Http\Requests\StoreSubadminCustomer;
 use App\Http\Requests\UpdateCustomer;
 use App\Http\Requests\UpdateSubadmin;
 use App\Http\Requests\UpdateSubadminCustomer;
+use App\Http\Resources\CustomerResource;
 use App\Http\Resources\SubadminResource;
 use App\Models\Admin;
 use App\Models\Customer;
@@ -70,8 +71,8 @@ class SubadminController extends Controller
     {
         $subadmin = auth()->user();
         $customer = Customer::create(array_merge($request->validated(), ['admin_id' => $subadmin->id]));
-
-        return response()->json(['message' => 'created successfully', 'customer' => $customer], 201);
+        $newCustomer=new CustomerResource($customer);
+        return response()->json(['message' => 'created successfully', 'customer' => $newCustomer], 201);
     }
     public function updateMyCustomer(UpdateSubadminCustomer $request, string $id)
     {

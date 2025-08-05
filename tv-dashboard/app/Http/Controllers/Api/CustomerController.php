@@ -59,6 +59,41 @@ class CustomerController extends Controller
 
     }
 
+    public function bulkUpdatePaymentStatus(Request $request)
+    {
+        $request->validate([
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+            'payment_status' => 'required| in:paid,unpaid'
+        ]);
+
+        Customer::whereIn('id', $request->customer_ids)->update(['payment_status' => $request->payment_status]);
+        return response()->json(['message' => 'Payment status updated successfully.']);
+
+    }
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+            'status' => 'required| in:active,expired'
+        ]);
+
+        Customer::whereIn('id', $request->customer_ids)->update(['status' => $request->status]);
+        return response()->json(['message' => 'Status updated successfully.']);
+
+    }
+
+    public function getCustomerySn(Request $request)
+    {
+        $sn = $request->serial_number;
+        $customer = Customer::where('serial_number', $sn)->first();
+        if (!$customer) {
+            return response()->json(['message' => 'there is no customer with this sn'], 404);
+        }
+        $cusomerReturend = new CustomerResource($customer);
+        return response()->json(['message' => 'returned successfully', 'customer' => $cusomerReturend]);
+    }
     /**
      * Remove the specified resource from storage.
      */

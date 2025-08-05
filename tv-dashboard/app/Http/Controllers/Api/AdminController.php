@@ -69,6 +69,25 @@ class AdminController extends Controller
         return response()->json(['message' => 'admin updated successfully', 'admin' => $admin], 201);
     }
 
+    public function updateBalance(string $id, Request $request)
+{
+    $request->validate([
+        'balance' => 'required|numeric'
+    ]);
+
+    $admin = Admin::find($id);
+
+    if (!$admin) {
+        return response()->json(['message' => 'Admin not found'], 404);
+    }
+
+    $admin->update([
+        'balance' => $admin->balance + $request->balance
+    ]);
+
+    return response()->json(['message' => 'Balance updated successfully']);
+}
+
     /**
      * Remove the specified resource from storage.
      */
@@ -93,7 +112,5 @@ class AdminController extends Controller
         $superadmin = auth()->user();
         return response()->json(['message' => 'returned my profile', 'superadmin' => $superadmin]);
     }
-    public function updateBalance()
-    {
-    }
+
 }

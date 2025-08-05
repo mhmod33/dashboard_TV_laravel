@@ -10,17 +10,19 @@ use App\Models\Customer;
 
 class Admin extends Authenticatable
 {
-    protected $table='admins';
-   /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens ,HasFactory, Notifiable;
+    protected $table = 'admins';
+    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'password',
-        'role'
+        'role',
+        'balance'
     ];
 
-    public function customer(){
+    public function customer()
+    {
         return $this->hasMany(Customer::class);
     }
 }

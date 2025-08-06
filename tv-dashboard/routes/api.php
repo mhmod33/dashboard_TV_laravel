@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/customers/bulk/payment-status', [CustomerController::class, 'bulkUpdatePaymentStatus']);
     Route::put('/customers/bulk/status', [CustomerController::class, 'bulkUpdateStatus']);
 
+    Route::get('getcustomersbyadminId/{id}', [CustomerController::class, 'getCustomersByAdminId']);
 
     //payments
     Route::apiResource('payments', PaymentController::class);
@@ -54,8 +55,8 @@ Route::middleware(['auth:sanctum', 'checkRole'])->prefix('superadmin')->group(fu
     //admins
     Route::apiResource('admins', AdminController::class);
     Route::put('admins/ban/{id}', [AdminController::class, 'ban']);
-    Route::patch('update-balance/{id}',[AdminController::class,'increaseBalance']);
-    Route::patch('decrease-balance/{id}',[AdminController::class,'decreaseBalance']);
+    Route::patch('update-balance/{id}', [AdminController::class, 'increaseBalance']);
+    Route::patch('decrease-balance/{id}', [AdminController::class, 'decreaseBalance']);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
     // myprofile

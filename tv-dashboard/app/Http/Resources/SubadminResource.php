@@ -20,6 +20,7 @@ class SubadminResource extends JsonResource
         $admin = Admin::find($this->id);
         if ($admin->role == 'superadmin') {
             return [
+                'id' => $this->id,
                 'name' => $this->name,
                 'role' => $this->role,
                 'status' => $this->status,
@@ -28,9 +29,10 @@ class SubadminResource extends JsonResource
             ];
         }
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'role' => $this->role,
-            'date'=>$this->created_at,
+            'date' => $this->created_at,
             'admin' => Admin::where('id', $this->parent_admin_id)->first(),
             'status' => $this->status,
             'balance' => $this->balance,

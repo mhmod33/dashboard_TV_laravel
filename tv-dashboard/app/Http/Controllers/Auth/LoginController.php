@@ -22,6 +22,7 @@ class LoginController extends Controller
                 'name' => $admin->name,
                 'role' => $admin->role,
                 'token' => $token,
+                'id' => $admin->id,
             ]);
         }
     }

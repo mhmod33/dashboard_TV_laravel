@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Customer;
 use App\Http\Resources\CustomerResource;
+use App\Models\Subadmin;
 use Illuminate\Http\Request;
 use App\Http\Requests\CustomerStore;
 use App\Http\Requests\UpdateCustomer;
@@ -93,6 +95,17 @@ class CustomerController extends Controller
         }
         $cusomerReturend = new CustomerResource($customer);
         return response()->json(['message' => 'returned successfully', 'customer' => $cusomerReturend]);
+    }
+
+    public function getCustomersByAdminId(string $id){
+        $subadmin=Subadmin::find($id);
+        $allCustomers=Customer::where('admin_id',$subadmin->id)->get();
+        $customers=CustomerResource::collection($allCustomers);
+        if(!$customers){
+            return response()->json(['message'=>'this admin dont have any customers at this time'],404);
+        }
+        
+        return response()->json(['message'=>'returned successfully customers','customers'=>$customers]);
     }
     /**
      * Remove the specified resource from storage.

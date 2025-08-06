@@ -6,8 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Period extends Model
 {
-    protected $fillable=[
-        'plan',
-        'duration'
+    protected $fillable = [
+        'period_code',
+        'display_name',
+        'months',
+        'days',
+        'display_order',
+        'active',
+        'price'
     ];
 }

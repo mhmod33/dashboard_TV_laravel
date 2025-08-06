@@ -20,6 +20,7 @@ class LoginController extends Controller
             return response()->json([
                 'message' => 'logged in successfully',
                 'name' => $admin->name,
+                'balance' => $admin->balance,
                 'role' => $admin->role,
                 'token' => $token,
                 'id' => $admin->id,

@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('myCustomers/{id}', [SubadminController::class, 'deleteMyCustomer']);
     Route::apiResource('admins', AdminController::class);
 
+    //periods (time-periods page)
+    Route::apiResource('periods', PeriodController::class);
 });
 
 

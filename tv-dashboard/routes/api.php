@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // subadmins
     Route::apiResource('subadmins', SubadminController::class);
+    Route::post('add-subadmin',[SubadminController::class,'addSubadmin']);
     Route::get('subadminProfile', [SubadminController::class, 'subadminProfile']);
 
     Route::get('getMySubadmins', [AdminController::class, 'getMySubadmins']);
@@ -43,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('myCustomers', [SubadminController::class, 'addMyCustomer']);
     Route::put('myCustomers/{id}', [SubadminController::class, 'updateMyCustomer']);
     Route::delete('myCustomers/{id}', [SubadminController::class, 'deleteMyCustomer']);
+    Route::apiResource('admins', AdminController::class);
 
 });
 
@@ -53,7 +55,6 @@ Route::middleware(['auth:sanctum', 'checkRole'])->prefix('superadmin')->group(fu
     Route::apiResource('periods', PeriodController::class);
 
     //admins
-    Route::apiResource('admins', AdminController::class);
     Route::put('admins/ban/{id}', [AdminController::class, 'ban']);
     Route::patch('update-balance/{id}', [AdminController::class, 'increaseBalance']);
     Route::patch('decrease-balance/{id}', [AdminController::class, 'decreaseBalance']);

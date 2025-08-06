@@ -23,7 +23,7 @@ class StorePayment extends FormRequest
     {
         return [
             'payment_id' => 'required',
-            'serial_number' => ['required', 'exists:customers,serial_number', 'min:12'],
+            'serial_number' => ['required', 'exists:customers,serial_number', 'regex:/^[A-Za-z0-9]+$/', 'min:12'],
             'customer_name' => ['required', 'exists:customers,customer_name'],
             'owner' => ['required', 'exists:admins,name'],
             'exp_after' => 'required',

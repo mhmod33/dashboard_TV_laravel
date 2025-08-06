@@ -22,8 +22,14 @@ class StorePeriod extends FormRequest
     public function rules(): array
     {
         return [
-            'plan'=>'required',
-            'duration'=>'required',
-        ];
+        'period_code' => 'required|unique:periods|alpha_num',
+        'display_name' => 'required|string',
+        'months' => 'required|integer|min:1',
+        'days' => 'required|integer|min:1',
+        'display_order' => 'required|integer|min:1',
+        'active' => 'required|boolean',
+        'price' => 'required|numeric|min:0', // Add this line
+        'plan' => 'required|numeric|min:0'
+    ];
     }
 }

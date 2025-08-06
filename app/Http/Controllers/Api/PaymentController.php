@@ -18,7 +18,7 @@ class PaymentController extends Controller
     {
         $allPayments = Payment::all();
         $payments = PaymentResource::collection($allPayments);
-        return response()->json(['message' => 'returned all payments', 'payemnts' => $payments]);
+        return response()->json(['message' => 'returned all payments', 'payments' => $payments]);
     }
 
     /**

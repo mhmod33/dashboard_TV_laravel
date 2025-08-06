@@ -22,8 +22,14 @@ class UpdatePeriod extends FormRequest
     public function rules(): array
     {
         return [
-            'plan'=>'required',
-            'duration'=>'required',
+            'period_code' => 'sometimes|alpha_num',
+            'display_name' => 'sometimes|string',
+            'months' => 'sometimes|integer|min:1',
+            'days' => 'sometimes|integer|min:1',
+            'display_order' => 'sometimes|integer|min:1',
+            'active' => 'sometimes|boolean',
+            'price' => 'required|numeric|min:0', // Add this line
+            'plan' => 'required|numeric|min:0'
         ];
     }
 }

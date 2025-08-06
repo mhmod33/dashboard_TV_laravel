@@ -14,16 +14,14 @@ class LoginController extends Controller
     {
         $admin = Admin::where('name', $request->name)->first();
         if (!$admin || !Hash::check($request->password, $admin->password)) {
-            return response()->json(['message' => 'invalid credientials']);
+            return response()->json(['message' => 'invalid credentials']);
         } else {
             $token = $admin->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'message' => 'logged in successfully',
                 'name' => $admin->name,
-                'balance' => $admin->balance,
                 'role' => $admin->role,
                 'token' => $token,
-                'id' => $admin->id,
             ]);
         }
     }

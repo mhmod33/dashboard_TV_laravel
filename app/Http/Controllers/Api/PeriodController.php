@@ -18,15 +18,27 @@ class PeriodController extends Controller
     {
         $allPeriods = Period::all();
         $periods = PeriodResource::collection($allPeriods);
-        return response()->json(['message' => 'returned all periods', 'periods' => $periods]);    }
+        return response()->json(['message' => 'returned all periods', 'periods' => $periods]);
+    }
 
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(StorePeriod $request)
     {
-        $period=Period::create($request->validated());
-        return response()->json(['message' => 'created successfully period', 'period' => $period], 201);
+        try {
+            $period = Period::create($request->validated()); // No longer setting plan manually
+            return response()->json([
+                'message' => 'Period created successfully',
+                'period' => new PeriodResource($period)
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create period',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -40,14 +52,26 @@ class PeriodController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
     public function update(UpdatePeriod $request, string $id)
     {
         $period = Period::find($id);
         if (!$period) {
-            return response()->json(['message' => 'this period is not found']);
+            return response()->json(['message' => 'Period not found'], 404);
         }
-        $period->update($request->validated());
-        return response()->json(['message' => 'updated successfully payemnt', 'payemnt' => $period], 201);
+
+        try {
+            $period->update($request->validated()); // No longer setting plan manually
+            return response()->json([
+                'message' => 'Period updated successfully',
+                'period' => new PeriodResource($period)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update period',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -55,7 +79,7 @@ class PeriodController extends Controller
      */
     public function destroy(string $id)
     {
-         $period = Period::find($id);
+        $period = Period::find($id);
         if (!$period) {
             return response()->json(['message' => 'this period is not found']);
         }

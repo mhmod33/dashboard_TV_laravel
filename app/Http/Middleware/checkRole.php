@@ -13,11 +13,36 @@ class checkRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'superadmin') {
-            return response()->json(['message' => 'u are not authorized to reach this page !'], 403);
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthorized. Please login first.'], 401);
         }
-        return $next($request);
+
+        $user = auth()->user();
+
+        // If no specific roles required, allow access
+        if (empty($roles)) {
+            return $next($request);
+        }
+
+        // Super admin can access everything
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
+        // Check if user has any of the required roles
+        foreach ($roles as $role) {
+            if ($user->hasRole($role)) {
+                return $next($request);
+            }
+        }
+
+        return response()->json([
+            'message' => 'You are not authorized to access this resource.',
+            'required_roles' => $roles,
+            'user_role' => $user->role
+        ], 403);
     }
 }

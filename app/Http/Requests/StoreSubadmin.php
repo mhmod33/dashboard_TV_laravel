@@ -27,7 +27,6 @@ class StoreSubadmin extends FormRequest
             'status' => 'required',
             'balance' => 'required |integer',
             'role' => 'required',
-            'parent_admin_id' => 'required|exists:admins,id',
         ];
     }
 }

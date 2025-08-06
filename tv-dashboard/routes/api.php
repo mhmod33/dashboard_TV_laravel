@@ -53,7 +53,9 @@ Route::middleware(['auth:sanctum', 'checkRole'])->prefix('superadmin')->group(fu
 
     //admins
     Route::apiResource('admins', AdminController::class);
-    Route::patch('update-balance/{id}',[AdminController::class,'updateBalance']);
+    Route::put('admins/ban/{id}', [AdminController::class, 'ban']);
+    Route::patch('update-balance/{id}',[AdminController::class,'increaseBalance']);
+    Route::patch('decrease-balance/{id}',[AdminController::class,'decreaseBalance']);
     Route::delete('customer/deleteAll', [CustomerController::class, 'deleteAll']);
 
     // myprofile

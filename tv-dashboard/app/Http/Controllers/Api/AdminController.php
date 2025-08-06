@@ -69,8 +69,8 @@ class AdminController extends Controller
         return response()->json(['message' => 'admin updated successfully', 'admin' => $admin], 201);
     }
 
-    public function updateBalance(string $id, Request $request)
-{
+    public function increaseBalance(string $id, Request $request)
+    {
     $request->validate([
         'balance' => 'required|numeric'
     ]);
@@ -86,7 +86,25 @@ class AdminController extends Controller
     ]);
 
     return response()->json(['message' => 'Balance updated successfully']);
-}
+    }
+    public function decreaseBalance(string $id, Request $request)
+    {
+    $request->validate([
+        'balance' => 'required|numeric'
+    ]);
+
+    $admin = Admin::find($id);
+
+    if (!$admin) {
+        return response()->json(['message' => 'Admin not found'], 404);
+    }
+
+    $admin->update([
+        'balance' => $admin->balance - $request->balance
+    ]);
+
+    return response()->json(['message' => 'Balance decreased successfully by '.$request->balance]);
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -101,6 +119,18 @@ class AdminController extends Controller
         return response()->json(['message' => 'deleted successfully!']);
 
     }
+    public function ban(string $id)
+    {
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(['message' => 'this admin is not found']);
+        }
+        $admin->update([
+            'status'=>'inactive'
+        ]);
+        return response()->json(['message' => 'banned admin successfully!']);
+    }
+
 
     public function getMyprofile()
     {

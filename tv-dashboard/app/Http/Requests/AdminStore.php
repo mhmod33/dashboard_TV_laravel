@@ -24,7 +24,6 @@ class AdminStore extends FormRequest
         return [
             'name' => 'required',
             'password' => 'required | min:3',
-            'status' => 'required',
             'balance' => 'required |integer',
             'role' => 'required',
         ];

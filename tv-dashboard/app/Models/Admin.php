@@ -18,7 +18,8 @@ class Admin extends Authenticatable
         'name',
         'password',
         'role',
-        'balance'
+        'balance',
+        'status'
     ];
 
     public function customer()

@@ -60,6 +60,15 @@ class AdminSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Subadmin',
+                'password' => Hash::make('Subadmin'),
+                'status' => 'active',
+                'role' => 'subadmin',
+                'balance' => 400,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

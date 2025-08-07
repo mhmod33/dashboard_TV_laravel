@@ -13,6 +13,8 @@ class Period extends Model
         'days',
         'display_order',
         'active',
-        'price'
+        'price',
+        'plan',
+        'duration'
     ];
 }

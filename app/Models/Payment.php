@@ -8,14 +8,14 @@ class Payment extends Model
 {
     protected $fillable = [
         'serial_number',
-        'id',
-        'cost',
-        'exp_before',
-        'owner',
         'payment_id',
-        'exp_after',
-        'created_at',
+        'owner',
         'customer_name',
-        'duration'
+        'duration',
+        'exp_before',
+        'exp_after',
+        'cost',
+        'created_at',
+        'updated_at'
     ];
 }

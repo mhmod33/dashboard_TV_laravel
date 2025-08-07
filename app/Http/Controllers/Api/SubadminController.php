@@ -9,6 +9,7 @@ use App\Http\Requests\StoreSubadminCustomer;
 use App\Http\Requests\UpdateCustomer;
 use App\Http\Requests\UpdateSubadmin;
 use App\Http\Requests\UpdateSubadminCustomer;
+use App\Http\Resources\CustomerResource;
 use App\Http\Resources\SubadminResource;
 use App\Models\Admin;
 use App\Models\Customer;
@@ -30,14 +31,12 @@ class SubadminController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function addSubadmin(StoreSubadmin $request, string $id)
+    public function addSubadmin(StoreSubadmin $request)
     {
-        $subadmin = Subadmin::find($id);
-        if (!$subadmin) {
-            return response()->json(['message' => 'this admin is not found']);
-        }
-        $subadmin->create($request->validated());
-        return response()->json(['messsage' => 'subadmin successfully to admin with id' . $id, 'admin' => $subadmin]);
+        $data = $request->validated();
+        $data['password'] = bcrypt($request->password);
+        $subadmin = Subadmin::create($data);
+        return response()->json(['messsage' => 'subadmin successfully to admin with id' . $request->parent_admin_id, 'subadmin' => $subadmin],201);
     }
 
     /**
@@ -53,9 +52,10 @@ class SubadminController extends Controller
 
     }
 
-    public function subadminProfile(){
+    public function subadminProfile()
+    {
         $subadmin = auth()->user();
-        return response()->json(['message'=>'returned my profile','subadmin'=>$subadmin]);
+        return response()->json(['message' => 'returned my profile', 'subadmin' => $subadmin]);
     }
 
     public function getMyCustomers()
@@ -70,8 +70,8 @@ class SubadminController extends Controller
     {
         $subadmin = auth()->user();
         $customer = Customer::create(array_merge($request->validated(), ['admin_id' => $subadmin->id]));
-
-        return response()->json(['message' => 'created successfully', 'customer' => $customer], 201);
+        $newCustomer = new CustomerResource($customer);
+        return response()->json(['message' => 'created successfully', 'customer' => $newCustomer], 201);
     }
     public function updateMyCustomer(UpdateSubadminCustomer $request, string $id)
     {

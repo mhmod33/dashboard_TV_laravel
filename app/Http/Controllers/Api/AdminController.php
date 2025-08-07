@@ -23,6 +23,9 @@ class AdminController extends Controller
         return response()->json(['message' => 'returned all admins', 'admins' => $admins]);
     }
 
+    // public function getAllAdmins(){
+    //     $adminUsers
+    // }
     /**
      * Store a newly created resource in storage.
      */
@@ -47,10 +50,11 @@ class AdminController extends Controller
         return response()->json(['message' => 'returned successfully', 'admin' => $adminData]);
     }
 
-    public function getMySubadmins(){
-        $admin=auth()->user();
-        $subadmins=Subadmin::where('parent_admin_id',$admin->id)->get();
-        $mySubadmins=SubadminResource::collection($subadmins);
+    public function getMySubadmins()
+    {
+        $admin = auth()->user();
+        $subadmins = Subadmin::where('parent_admin_id', $admin->id)->get();
+        $mySubadmins = SubadminResource::collection($subadmins);
         return response()->json(['message' => 'returned successfully', 'subadmins' => $mySubadmins]);
     }
     /**
@@ -63,6 +67,43 @@ class AdminController extends Controller
         $admin = Admin::find($id);
         $admin->update($data);
         return response()->json(['message' => 'admin updated successfully', 'admin' => $admin], 201);
+    }
+
+    public function increaseBalance(string $id, Request $request)
+    {
+    $request->validate([
+        'balance' => 'required|numeric'
+    ]);
+
+    $admin = Admin::find($id);
+
+    if (!$admin) {
+        return response()->json(['message' => 'Admin not found'], 404);
+    }
+
+    $admin->update([
+        'balance' => $admin->balance + $request->balance
+    ]);
+
+    return response()->json(['message' => 'Balance updated successfully']);
+    }
+    public function decreaseBalance(string $id, Request $request)
+    {
+    $request->validate([
+        'balance' => 'required|numeric'
+    ]);
+
+    $admin = Admin::find($id);
+
+    if (!$admin) {
+        return response()->json(['message' => 'Admin not found'], 404);
+    }
+
+    $admin->update([
+        'balance' => $admin->balance - $request->balance
+    ]);
+
+    return response()->json(['message' => 'Balance decreased successfully by '.$request->balance]);
     }
 
     /**
@@ -78,16 +119,28 @@ class AdminController extends Controller
         return response()->json(['message' => 'deleted successfully!']);
 
     }
-
-    public function getMyprofile(){
-        $admin = auth()->user();
-        return response()->json(['message'=>'returned my profile','admin'=>$admin]);
-    }
-    public function getSuperadminProfile(){
-        $superadmin = auth()->user();
-        return response()->json(['message'=>'returned my profile','superadmin'=>$superadmin]);
-    }
-    public function updateBalance()
+    public function ban(string $id)
     {
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(['message' => 'this admin is not found']);
+        }
+        $admin->update([
+            'status'=>'inactive'
+        ]);
+        return response()->json(['message' => 'banned admin successfully!']);
     }
+
+
+    public function getMyprofile()
+    {
+        $admin = auth()->user();
+        return response()->json(['message' => 'returned my profile', 'admin' => $admin]);
+    }
+    public function getSuperadminProfile()
+    {
+        $superadmin = auth()->user();
+        return response()->json(['message' => 'returned my profile', 'superadmin' => $superadmin]);
+    }
+
 }

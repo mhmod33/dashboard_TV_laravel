@@ -17,7 +17,7 @@ return new class extends Migration {
 
         Schema::table('admins', function (Blueprint $table) {
             // Add the new enum column with updated values
-            $table->enum('role', ['super admin', 'admin', 'subadmin'])->default('admin')->after('status');
+            $table->enum('role', ['superadmin', 'admin', 'subadmin'])->default('admin')->after('status');
         });
     }
 

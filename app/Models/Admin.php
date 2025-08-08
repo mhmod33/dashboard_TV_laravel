@@ -15,7 +15,7 @@ class Admin extends Authenticatable
     use HasApiTokens ,HasFactory, Notifiable;
 
     // Role constants
-    const ROLE_SUPER_ADMIN = 'super admin';
+    const ROLE_SUPER_ADMIN = 'superadmin';
     const ROLE_ADMIN = 'admin';
     const ROLE_SUBADMIN = 'subadmin';
 

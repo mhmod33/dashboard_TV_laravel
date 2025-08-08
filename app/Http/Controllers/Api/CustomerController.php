@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Customer;
 use App\Http\Resources\CustomerResource;
+use App\Models\Subadmin;
 use Illuminate\Http\Request;
 use App\Http\Requests\CustomerStore;
 use App\Http\Requests\UpdateCustomer;
@@ -75,6 +77,7 @@ class CustomerController extends Controller
     public function deleteAll()
     {
         if (auth()->user()->role != 'superadmin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         Customer::turncate();

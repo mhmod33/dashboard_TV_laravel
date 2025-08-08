@@ -22,7 +22,7 @@ class CustomerStore extends FormRequest
     public function rules(): array
     {
         return [
-            'serial_number' => ['required', 'min:12', 'regex:/^[A-Za-z0-9]+$/', 'unique:customers,serial_number'],
+            'serial_number' => ['required', 'min:12', 'regex:/^[A-Fa-f0-9]+$/', 'unique:customers,serial_number'],
             'customer_name' => 'required',
             'plan_id' => 'required',
             'admin_id' => 'required',

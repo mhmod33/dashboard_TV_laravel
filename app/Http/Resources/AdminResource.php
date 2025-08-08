@@ -20,6 +20,7 @@ class AdminResource extends JsonResource
         $admin=Admin::find($this->id);
         if($admin->role=='superadmin'){
             return [
+                'id'=>$this->id,
                 'name' => $this->name,
                 'role' => $this->role,
                 'status' => $this->status,
@@ -28,6 +29,7 @@ class AdminResource extends JsonResource
             ];
         }
         return [
+            'id'=>$this->id,
             'name' => $this->name,
             'role' => $this->role,
             'status' => $this->status,

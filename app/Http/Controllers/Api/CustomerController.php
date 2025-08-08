@@ -85,6 +85,31 @@ class CustomerController extends Controller
         return response()->json(['message' => 'Status updated successfully.']);
 
     }
+    public function bulkChangeAdmin(Request $request)
+    {
+    $request->validate([
+        'customer_ids' => 'required|array',
+        'customer_ids.*' => 'exists:customers,id',
+        'admin_id' => 'required|exists:admins,id',
+    ]);
+
+    Customer::whereIn('id', $request->customer_ids)
+        ->update(['admin_id' => $request->admin_id]);
+
+    return response()->json(['message' => 'Admin changed successfully.']);
+    }
+
+    public function bulkDeleteSelected(Request $request)
+    {
+        $request->validate([
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+        ]);
+
+        Customer::whereIn('id', $request->customer_ids)->delete();
+        return response()->json(['message' => 'customers deleted successfully.']);
+
+    }
 
     public function getCustomerySn(Request $request)
     {

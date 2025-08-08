@@ -61,8 +61,8 @@ class SubadminController extends Controller
     public function getMyCustomers()
     {
         $subadmin = auth()->user();
-        $customers = Customer::where('admin_id', $subadmin->id)->get();
-
+        $allCustomers = Customer::where('admin_id', $subadmin->id)->get();
+        $customers=CustomerResource::collection($allCustomers);
         return response()->json(['message' => 'reutrned customers', 'customers' => $customers], 200);
     }
 

@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('getcustomerbysn', [CustomerController::class, 'getCustomerySn']);
     Route::put('/customers/bulk/payment-status', [CustomerController::class, 'bulkUpdatePaymentStatus']);
     Route::put('/customers/bulk/status', [CustomerController::class, 'bulkUpdateStatus']);
+    Route::put('/customers/bulk/changeadmin', [CustomerController::class, 'bulkChangeAdmin']);
+    Route::put('/customers/bulk/delete', [CustomerController::class, 'bulkDeleteSelected']);
 
     Route::get('getcustomersbyadminId/{id}', [CustomerController::class, 'getCustomersByAdminId']);
 

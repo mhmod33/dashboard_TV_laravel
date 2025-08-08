@@ -8,6 +8,8 @@ use App\Http\Resources\CustomerResource;
 use Illuminate\Http\Request;
 use App\Http\Requests\CustomerStore;
 use App\Http\Requests\UpdateCustomer;
+use App\Models\Period;
+
 class CustomerController extends Controller
 {
     /**
@@ -20,6 +22,15 @@ class CustomerController extends Controller
         return response()->json(['message ' => 'returned successfully all customers', 'customers' => $customers]);
     }
 
+    public function show(string $id)
+    {
+        $customer = Customer::find($id);
+        if (!$customer) {
+            return response()->json(['message' => 'Customer not found'], 404);
+        }
+        return response()->json(['customer' => new CustomerResource($customer)]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -28,15 +39,24 @@ class CustomerController extends Controller
         $customer = Customer::create($request->validated());
         return response()->json(['message' => 'created successfully', 'new customer', $customer]);
     }
+
     public function update(UpdateCustomer $request, string $id)
     {
         $customer = Customer::find($id);
         if (!$customer) {
-            return response()->json(['message' => 'this customer is not found']);
+            return response()->json(['message' => 'Customer not found'], 404);
         }
-        $customer->update($request->validated());
-        return response()->json(['message' => 'updated successfully', 'new customer' => $customer]);
 
+        // Convert plan_id to integer if needed
+        $data = $request->validated();
+        $data['plan_id'] = (int)$data['plan_id'];
+
+        $customer->update($data);
+
+        return response()->json([
+            'message' => 'Customer updated successfully',
+            'customer' => new CustomerResource($customer)
+        ]);
     }
 
     /**
@@ -55,9 +75,16 @@ class CustomerController extends Controller
     public function deleteAll()
     {
         if (auth()->user()->role != 'superadmin') {
-            return response()->json(['error' => 'Unauthorized'],403);
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
         Customer::turncate();
-        return response()->json(['message' => 'All customers have been deleted.'],200);
+        return response()->json(['message' => 'All customers have been deleted.'], 200);
+    }
+
+    // In CustomerController.php
+    public function getAllPeriods()
+    {
+        $periods = Period::all(); // Assuming you have a Period model
+        return response()->json(['periods' => $periods]);
     }
 }

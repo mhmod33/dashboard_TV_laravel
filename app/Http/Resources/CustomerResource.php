@@ -15,13 +15,17 @@ class CustomerResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'serial_number' => $this->serial_number,
-            'name' => $this->customer_name,
-            'address' => $this->address,
-            'phone' => $this->phone,
-            'payment_status' => $this->payment_status,
-            'status' => $this->status,
-            'created_at' => $this->created_at,
-        ];
+        'id' => $this->id,
+        'serial_number' => $this->serial_number,
+        'name' => $this->customer_name,
+        'customer_name' => $this->customer_name,
+        'address' => $this->address,
+        'phone' => $this->phone,
+        'payment_status' => $this->payment_status,
+        'status' => $this->status,
+        'plan_id' => $this->plan_id,
+        'admin_id' => $this->admin_id,
+        'created_at' => $this->created_at,
+    ];
     }
 }

@@ -31,9 +31,10 @@ class LoginController extends Controller
         return response()->json([
             'message' => 'logged in successfully',
             'name' => $admin->name,
-            'role' => strtolower($admin->role),
-            'status' => $admin->status,
+            'balance' => $admin->balance,
+            'role' => $admin->role,
             'token' => $token,
+            'id' => $admin->id,
         ]);
     }
 }

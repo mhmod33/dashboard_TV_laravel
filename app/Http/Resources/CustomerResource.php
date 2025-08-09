@@ -27,6 +27,7 @@ class CustomerResource extends JsonResource
         'plan_id' => $this->plan_id,
         'admin_id' => $this->admin_id,
         'created_at' => $this->created_at,
+        'owner' => Admin::where('id',$this->admin_id)->first()->name,
     ];
     }
 }

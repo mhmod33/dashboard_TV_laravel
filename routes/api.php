@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PeriodController;
+use App\Http\Controllers\Api\AdminPriceController;
 use App\Http\Controllers\api\SubadminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -50,6 +51,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //periods (time-periods page)
     Route::apiResource('periods', PeriodController::class);
+
+    // Per-admin price/plan overrides
+    Route::get('admins/{adminId}/periods', [AdminPriceController::class, 'listForAdmin']);
+    Route::put('admins/{adminId}/periods', [AdminPriceController::class, 'upsertForAdmin']);
 });
 
 

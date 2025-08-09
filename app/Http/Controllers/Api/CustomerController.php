@@ -78,12 +78,81 @@ class CustomerController extends Controller
     {
         if (auth()->user()->role != 'superadmin') {
             return response()->json(['error' => 'Unauthorized'], 403);
-            return response()->json(['error' => 'Unauthorized'], 403);
         }
         Customer::turncate();
         return response()->json(['message' => 'All customers have been deleted.'], 200);
     }
+public function bulkUpdatePaymentStatus(Request $request)
+    {
+        $request->validate([
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+            'payment_status' => 'required| in:paid,unpaid'
+        ]);
 
+        Customer::whereIn('id', $request->customer_ids)->update(['payment_status' => $request->payment_status]);
+        return response()->json(['message' => 'Payment status updated successfully.']);
+
+    }
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+            'status' => 'required| in:active,expired'
+        ]);
+
+        Customer::whereIn('id', $request->customer_ids)->update(['status' => $request->status]);
+        return response()->json(['message' => 'Status updated successfully.']);
+
+    }
+
+    public function getCustomerySn(Request $request)
+    {
+        $sn = $request->serial_number;
+        $customer = Customer::where('serial_number', $sn)->first();
+        if (!$customer) {
+            return response()->json(['message' => 'there is no customer with this sn'], 404);
+        }
+        $cusomerReturend = new CustomerResource($customer);
+        return response()->json(['message' => 'returned successfully', 'customer' => $cusomerReturend]);
+    }
+
+    public function getCustomersByAdminId(string $id){
+        $subadmin=Subadmin::find($id);
+        $allCustomers=Customer::where('admin_id',$subadmin->id)->get();
+        $customers=CustomerResource::collection($allCustomers);
+        if(!$customers){
+            return response()->json(['message'=>'this admin dont have any customers at this time'],404);
+        }
+        
+        return response()->json(['message'=>'returned successfully customers','customers'=>$customers]);
+    }
+    public function bulkChangeAdmin(Request $request)
+{
+    $request->validate([
+        'customer_ids' => 'required|array',
+        'customer_ids.*' => 'exists:customers,id',
+        'admin_id' => 'required|exists:admins,id',
+    ]);
+
+    Customer::whereIn('id', $request->customer_ids)
+        ->update(['admin_id' => $request->admin_id]);
+
+    return response()->json(['message' => 'Admin updated successfully.']);
+}
+
+public function bulkDeleteSelected(Request $request)
+{
+    $request->validate([
+        'customer_ids' => 'required|array',
+        'customer_ids.*' => 'exists:customers,id',
+    ]);
+
+    Customer::whereIn('id', $request->customer_ids)->delete();
+
+    return response()->json(['message' => 'Customers deleted successfully.']);
+}
     // In CustomerController.php
     public function getAllPeriods()
     {

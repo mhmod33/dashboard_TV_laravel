@@ -38,8 +38,71 @@ class CustomerController extends Controller
      */
     public function store(CustomerStore $request)
     {
-        $customer = Customer::create($request->validated());
-        return response()->json(['message' => 'created successfully', 'new customer', $customer]);
+        // Get the authenticated user
+        $currentUser = auth()->user();
+        $data = $request->validated();
+        
+        // Get the period price
+        $period = Period::find($data['plan_id']);
+        if (!$period) {
+            return response()->json(['message' => 'Period not found'], 404);
+        }
+        
+        // If superadmin is adding a customer for an admin
+        if ($currentUser->role === 'superadmin' && isset($data['admin_id'])) {
+            $admin = Admin::find($data['admin_id']);
+            if (!$admin) {
+                return response()->json(['message' => 'Admin not found'], 404);
+            }
+            
+            // Decrease admin's balance
+            if ($admin->balance < $period->price) {
+                return response()->json(['message' => 'Admin has insufficient balance'], 400);
+            }
+            
+            $admin->update([
+                'balance' => $admin->balance - $period->price
+            ]);
+            
+            // Create the customer
+            $customer = Customer::create($data);
+            
+            return response()->json([
+                'message' => 'Customer created successfully and admin balance decreased', 
+                'customer' => $customer,
+                'admin' => $admin
+            ]);
+        }
+        // If admin is adding a customer for themselves
+        else if ($currentUser->role === 'admin') {
+            // Check if admin has enough balance
+            if ($currentUser->balance < $period->price) {
+                return response()->json(['message' => 'Insufficient balance'], 400);
+            }
+            
+            // Decrease admin's balance
+            $currentUser->update([
+                'balance' => $currentUser->balance - $period->price
+            ]);
+            
+            // If admin_id is not set, set it to the current admin's id
+            if (!isset($data['admin_id'])) {
+                $data['admin_id'] = $currentUser->id;
+            }
+            
+            // Create the customer
+            $customer = Customer::create($data);
+            
+            return response()->json([
+                'message' => 'Customer created successfully and balance decreased', 
+                'customer' => $customer,
+                'admin' => $currentUser
+            ]);
+        }
+        
+        // Default case (should not happen with proper role checks)
+        $customer = Customer::create($data);
+        return response()->json(['message' => 'created successfully', 'customer' => $customer]);
     }
 
     public function update(UpdateCustomer $request, string $id)

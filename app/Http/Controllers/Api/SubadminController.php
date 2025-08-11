@@ -13,6 +13,7 @@ use App\Http\Resources\CustomerResource;
 use App\Http\Resources\SubadminResource;
 use App\Models\Admin;
 use App\Models\Customer;
+use App\Models\Period;
 use App\Models\Subadmin;
 use Illuminate\Http\Request;
 
@@ -69,9 +70,33 @@ class SubadminController extends Controller
     public function addMyCustomer(StoreSubadminCustomer $request)
     {
         $subadmin = auth()->user();
-        $customer = Customer::create(array_merge($request->validated(), ['admin_id' => $subadmin->id]));
+        $data = $request->validated();
+        
+        // Get the period price
+        $period = Period::find($data['plan_id']);
+        if (!$period) {
+            return response()->json(['message' => 'Period not found'], 404);
+        }
+        
+        // Check if subadmin has enough balance
+        if ($subadmin->balance < $period->price) {
+            return response()->json(['message' => 'Insufficient balance'], 400);
+        }
+        
+        // Decrease subadmin's balance
+        $subadmin->update([
+            'balance' => $subadmin->balance - $period->price
+        ]);
+        
+        // Create the customer with subadmin's ID
+        $customer = Customer::create(array_merge($data, ['admin_id' => $subadmin->id]));
         $newCustomer = new CustomerResource($customer);
-        return response()->json(['message' => 'created successfully', 'customer' => $newCustomer], 201);
+        
+        return response()->json([
+            'message' => 'Customer created successfully and balance decreased', 
+            'customer' => $newCustomer,
+            'subadmin' => $subadmin
+        ], 201);
     }
     public function updateMyCustomer(UpdateSubadminCustomer $request, string $id)
     {

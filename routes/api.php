@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // subadmins
     Route::apiResource('subadmins', SubadminController::class);
-    Route::post('add-subadmin',[SubadminController::class,'addSubadmin']);
+    Route::post('subadmins',[SubadminController::class,'addSubadmin']);
     Route::get('subadminProfile', [SubadminController::class, 'subadminProfile']);
 
     Route::get('getMySubadmins', [AdminController::class, 'getMySubadmins']);

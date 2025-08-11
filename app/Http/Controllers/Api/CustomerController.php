@@ -112,12 +112,173 @@ class CustomerController extends Controller
             return response()->json(['message' => 'Customer not found'], 404);
         }
 
-        // Convert plan_id to integer if needed
+        // Get the authenticated user
+        $currentUser = auth()->user();
         $data = $request->validated();
         $data['plan_id'] = (int)$data['plan_id'];
-
+        
+        // Check if plan ID has changed
+        if ($customer->plan_id != $data['plan_id']) {
+            // Get the old and new period prices
+            $oldPeriod = Period::find($customer->plan_id);
+            $newPeriod = Period::find($data['plan_id']);
+            
+            if (!$oldPeriod || !$newPeriod) {
+                return response()->json(['message' => 'Period not found'], 404);
+            }
+            
+            // Calculate price difference
+            $priceDifference = $newPeriod->price - $oldPeriod->price;
+        } else {
+            // No plan change, no price difference
+            $priceDifference = 0;
+        }
+        
+        // If price is increasing, check and update balance
+        if ($priceDifference > 0) {
+            // If superadmin is updating a customer for an admin
+            if ($currentUser->role === 'superadmin' && isset($data['admin_id'])) {
+                $admin = Admin::find($data['admin_id']);
+                if (!$admin) {
+                    return response()->json(['message' => 'Admin not found'], 404);
+                }
+                
+                // Check if admin has enough balance
+                if ($admin->balance < $priceDifference) {
+                    return response()->json(['message' => 'Admin has insufficient balance'], 400);
+                }
+                
+                // Decrease admin's balance
+                $admin->update([
+                    'balance' => $admin->balance - $priceDifference
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and admin balance adjusted', 
+                    'customer' => new CustomerResource($customer),
+                    'admin' => $admin,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+            // If admin is updating their own customer
+            else if ($currentUser->role === 'admin') {
+                // Check if admin has enough balance
+                if ($currentUser->balance < $priceDifference) {
+                    return response()->json(['message' => 'Insufficient balance'], 400);
+                }
+                
+                // Decrease admin's balance
+                $currentUser->update([
+                    'balance' => $currentUser->balance - $priceDifference
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and balance adjusted', 
+                    'customer' => new CustomerResource($customer),
+                    'admin' => $currentUser,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+            // If subadmin is updating their customer
+            else if ($currentUser->role === 'subadmin') {
+                // Get the parent admin
+                $admin = Admin::find($currentUser->parent_admin_id);
+                if (!$admin) {
+                    return response()->json(['message' => 'Parent admin not found'], 404);
+                }
+                
+                // Check if subadmin has enough balance
+                if ($currentUser->balance < $priceDifference) {
+                    return response()->json(['message' => 'Insufficient balance'], 400);
+                }
+                
+                // Decrease subadmin's balance
+                $currentUser->update([
+                    'balance' => $currentUser->balance - $priceDifference
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and balance adjusted', 
+                    'customer' => new CustomerResource($customer),
+                    'subadmin' => $currentUser,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+        }
+        // If price is decreasing, refund the difference
+        else if ($priceDifference < 0) {
+            $refundAmount = abs($priceDifference);
+            
+            // If superadmin is updating a customer for an admin
+            if ($currentUser->role === 'superadmin' && isset($data['admin_id'])) {
+                $admin = Admin::find($data['admin_id']);
+                if (!$admin) {
+                    return response()->json(['message' => 'Admin not found'], 404);
+                }
+                
+                // Increase admin's balance
+                $admin->update([
+                    'balance' => $admin->balance + $refundAmount
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and admin balance refunded', 
+                    'customer' => new CustomerResource($customer),
+                    'admin' => $admin,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+            // If admin is updating their own customer
+            else if ($currentUser->role === 'admin') {
+                // Increase admin's balance
+                $currentUser->update([
+                    'balance' => $currentUser->balance + $refundAmount
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and balance refunded', 
+                    'customer' => new CustomerResource($customer),
+                    'admin' => $currentUser,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+            // If subadmin is updating their customer
+            else if ($currentUser->role === 'subadmin') {
+                // Increase subadmin's balance
+                $currentUser->update([
+                    'balance' => $currentUser->balance + $refundAmount
+                ]);
+                
+                // Update the customer
+                $customer->update($data);
+                
+                return response()->json([
+                    'message' => 'Customer updated successfully and balance refunded', 
+                    'customer' => new CustomerResource($customer),
+                    'subadmin' => $currentUser,
+                    'price_difference' => $priceDifference
+                ]);
+            }
+        }
+        
+        // If no price change or default case
         $customer->update($data);
-
+        
         return response()->json([
             'message' => 'Customer updated successfully',
             'customer' => new CustomerResource($customer)

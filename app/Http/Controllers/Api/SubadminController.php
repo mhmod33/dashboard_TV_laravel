@@ -34,10 +34,38 @@ class SubadminController extends Controller
      */
     public function addSubadmin(StoreSubadmin $request)
     {
+        // Get the authenticated admin
+        $admin = auth()->user();
+        
+        // Validate the request data
         $data = $request->validated();
         $data['password'] = bcrypt($request->password);
-        $subadmin = Subadmin::create($data);
-        return response()->json(['messsage' => 'subadmin successfully to admin with id' . $request->parent_admin_id, 'subadmin' => $subadmin],201);
+        
+        // Set the parent_admin_id to the current admin's ID
+        $data['parent_admin_id'] = $admin->id;
+        
+        // Check if admin has enough balance
+        $subadminBalance = $data['balance'];
+        if ($admin->balance < $subadminBalance) {
+            return response()->json(['message' => 'Insufficient balance to add subadmin'], 400);
+        }
+        
+        // Decrease admin's balance
+        $admin->update([
+            'balance' => $admin->balance - $subadminBalance
+        ]);
+        
+        // Create the subadmin
+        $data['role'] = 'subadmin'; // Ensure role is set to subadmin
+        
+        // Create the subadmin directly in the Admin model to bypass the global scope
+        $subadmin = Admin::create($data);
+        
+        return response()->json([
+            'message' => 'Subadmin added successfully and balance decreased', 
+            'subadmin' => $subadmin,
+            'admin' => $admin
+        ], 201);
     }
 
     /**
@@ -123,12 +151,57 @@ class SubadminController extends Controller
      */
     public function update(UpdateSubadmin $request, string $id)
     {
+        // Get the authenticated admin
+        $admin = auth()->user();
+        
+        // Find the subadmin
         $subadmin = Subadmin::find($id);
         if (!$subadmin) {
-            return response()->json(['message' => 'this admin is not found']);
+            return response()->json(['message' => 'This subadmin is not found'], 404);
         }
-        $subadmin->update($request->validated());
-        return response()->json(['messsage' => 'updated subadmin successfully ', 'subadmin' => $subadmin]);
+        
+        // Check if this subadmin belongs to the current admin
+        if ($subadmin->parent_admin_id != $admin->id) {
+            return response()->json(['message' => 'You are not authorized to update this subadmin'], 403);
+        }
+        
+        $data = $request->validated();
+        $data['password'] = bcrypt($request->password);
+        $data['role'] = 'subadmin'; // Ensure role remains subadmin
+        
+        // Calculate balance difference
+        $currentBalance = $subadmin->balance;
+        $newBalance = $data['balance'];
+        $balanceDifference = $newBalance - $currentBalance;
+        
+        // If balance is increased, check if admin has enough balance
+        if ($balanceDifference > 0) {
+            if ($admin->balance < $balanceDifference) {
+                return response()->json(['message' => 'Insufficient balance to increase subadmin balance'], 400);
+            }
+            
+            // Decrease admin's balance by the difference
+            $admin->update([
+                'balance' => $admin->balance - $balanceDifference
+            ]);
+        } 
+        // If balance is decreased, increase admin's balance
+        else if ($balanceDifference < 0) {
+            $admin->update([
+                'balance' => $admin->balance + abs($balanceDifference)
+            ]);
+        }
+        
+        // Update the subadmin
+        // Ensure role remains subadmin
+        $data['role'] = 'subadmin';
+        $subadmin->update($data);
+        
+        return response()->json([
+            'message' => 'Subadmin updated successfully and balance adjusted', 
+            'subadmin' => $subadmin,
+            'admin' => $admin
+        ]);
     }
 
     /**

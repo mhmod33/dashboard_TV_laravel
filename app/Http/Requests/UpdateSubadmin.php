@@ -25,9 +25,8 @@ class UpdateSubadmin extends FormRequest
             'name' => 'required',
             'password' => 'required | min:3',
             'status' => 'required',
-            'balance' => 'required | integer | min:0',
+            'balance' => 'required |integer',
             'role' => 'required',
-            // parent_admin_id will be preserved in the controller
         ];
     }
 }

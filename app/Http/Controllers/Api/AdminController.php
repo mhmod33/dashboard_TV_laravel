@@ -33,8 +33,39 @@ class AdminController extends Controller
     {
         $data = $request->validated();
         $data['password'] = bcrypt($request->password);
+        
+        // If creating a subadmin, handle balance deduction from parent admin
+        if (isset($data['role']) && $data['role'] === 'subadmin' && isset($data['parent_admin_id']) && isset($data['balance'])) {
+            // Get the parent admin
+            $parentAdmin = Admin::find($data['parent_admin_id']);
+            
+            if (!$parentAdmin) {
+                return response()->json(['message' => 'Parent admin not found'], 404);
+            }
+            
+            // Check if parent admin has enough balance
+            if ($parentAdmin->balance < $data['balance']) {
+                return response()->json(['message' => 'Parent admin has insufficient balance'], 400);
+            }
+            
+            // Decrease parent admin's balance
+            $parentAdmin->update([
+                'balance' => $parentAdmin->balance - $data['balance']
+            ]);
+            
+            // Create the subadmin
+            $admin = Admin::create($data);
+            
+            return response()->json([
+                'message' => 'Subadmin created successfully and parent admin balance decreased', 
+                'admin' => $admin,
+                'parent_admin' => $parentAdmin
+            ], 201);
+        }
+        
+        // Regular admin creation
         $admin = Admin::create($data);
-        return response()->json(['message' => 'created new admin successfully', 'admin' => $admin], 201);
+        return response()->json(['message' => 'Created new admin successfully', 'admin' => $admin], 201);
     }
 
     /**

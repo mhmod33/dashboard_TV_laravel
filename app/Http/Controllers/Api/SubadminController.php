@@ -97,7 +97,7 @@ class SubadminController extends Controller
 
     public function addMyCustomer(StoreSubadminCustomer $request)
     {
-        $subadmin = auth()->user();
+        $user = auth()->user();
         $data = $request->validated();
         
         // Get the period price
@@ -106,24 +106,24 @@ class SubadminController extends Controller
             return response()->json(['message' => 'Period not found'], 404);
         }
         
-        // Check if subadmin has enough balance
-        if ($subadmin->balance < $period->price) {
+        // Check if user has enough balance
+        if ($user->balance < $period->price) {
             return response()->json(['message' => 'Insufficient balance'], 400);
         }
         
-        // Decrease subadmin's balance
-        $subadmin->update([
-            'balance' => $subadmin->balance - $period->price
+        // Decrease user's balance
+        $user->update([
+            'balance' => $user->balance - $period->price
         ]);
         
-        // Create the customer with subadmin's ID
-        $customer = Customer::create(array_merge($data, ['admin_id' => $subadmin->id]));
+        // Create the customer with the authenticated user's ID (admin or subadmin)
+        $customer = Customer::create(array_merge($data, ['admin_id' => $user->id]));
         $newCustomer = new CustomerResource($customer);
         
         return response()->json([
             'message' => 'Customer created successfully and balance decreased', 
             'customer' => $newCustomer,
-            'subadmin' => $subadmin
+            'admin' => $user
         ], 201);
     }
     public function updateMyCustomer(UpdateSubadminCustomer $request, string $id)
@@ -193,8 +193,6 @@ class SubadminController extends Controller
         }
         
         // Update the subadmin
-        // Ensure role remains subadmin
-        $data['role'] = 'subadmin';
         $subadmin->update($data);
         
         return response()->json([

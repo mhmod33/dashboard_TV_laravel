@@ -25,9 +25,9 @@ class StoreSubadmin extends FormRequest
             'name' => 'required',
             'password' => 'required | min:3',
             'status' => 'required',
-            'balance' => 'required | integer | min:0',
+            'balance' => 'required |integer',
             'role' => 'required',
-            // parent_admin_id will be set automatically in the controller
+            'parent_admin_id' => 'required|exists:admins,id'
         ];
     }
 }

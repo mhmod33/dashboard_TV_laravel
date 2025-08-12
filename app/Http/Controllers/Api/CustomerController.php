@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
-use App\Models\Customer;
-use App\Http\Resources\CustomerResource;
-use App\Models\Subadmin;
-use Illuminate\Http\Request;
 use App\Http\Requests\CustomerStore;
 use App\Http\Requests\UpdateCustomer;
+use App\Http\Resources\CustomerResource;
+use App\Models\Admin;
+use App\Models\Customer;
 use App\Models\Period;
+use App\Models\Subadmin;
+use Illuminate\Http\Request;
 
-class CustomerController extends Controller
+class CustomerController extends Controller 
 {
     /**
      * Display a listing of the resource.
@@ -38,8 +38,39 @@ class CustomerController extends Controller
      */
     public function store(CustomerStore $request)
     {
-        $customer = Customer::create($request->validated());
-        return response()->json(['message' => 'created successfully', 'new customer', $customer]);
+        $data = $request->validated();
+        
+        // Get the period price
+        $period = Period::find($data['plan_id']);
+        if (!$period) {
+            return response()->json(['message' => 'Period not found'], 404);
+        }
+        
+        // Get the parent admin (selected by superadmin)
+        $admin = Admin::find($data['admin_id']);
+        if (!$admin) {
+            return response()->json(['message' => 'Admin not found'], 404);
+        }
+        
+        // Check if admin has enough balance
+        if ($admin->balance < $period->price) {
+            return response()->json(['message' => 'Insufficient balance for the selected admin'], 400);
+        }
+        
+        // Decrease admin's balance
+        $admin->update([
+            'balance' => $admin->balance - $period->price
+        ]);
+        
+        // Create the customer
+        $customer = Customer::create($data);
+        $newCustomer = new CustomerResource($customer);
+        
+        return response()->json([
+            'message' => 'Customer created successfully and admin balance decreased', 
+            'customer' => $newCustomer,
+            'admin' => $admin
+        ], 201);
     }
 
     public function update(UpdateCustomer $request, string $id)
@@ -52,6 +83,71 @@ class CustomerController extends Controller
         // Convert plan_id to integer if needed
         $data = $request->validated();
         $data['plan_id'] = (int)$data['plan_id'];
+        
+        // Get the old period price
+        $oldPeriod = Period::find($customer->plan_id);
+        if (!$oldPeriod) {
+            return response()->json(['message' => 'Current period not found'], 404);
+        }
+        
+        // Get the new period price
+        $newPeriod = Period::find($data['plan_id']);
+        if (!$newPeriod) {
+            return response()->json(['message' => 'New period not found'], 404);
+        }
+        
+        // Check if admin_id is being changed
+        $adminChanged = isset($data['admin_id']) && $data['admin_id'] != $customer->admin_id;
+        $planChanged = $data['plan_id'] != $customer->plan_id;
+        
+        // If admin is changing, handle admin balance changes
+        if ($adminChanged) {
+            // Get the new admin
+            $newAdmin = Admin::find($data['admin_id']);
+            if (!$newAdmin) {
+                return response()->json(['message' => 'Admin not found'], 404);
+            }
+            
+            // Check if new admin has enough balance
+            if ($newAdmin->balance < $newPeriod->price) {
+                return response()->json(['message' => 'Insufficient balance for the selected admin'], 400);
+            }
+            
+            // Decrease new admin's balance
+            $newAdmin->update([
+                'balance' => $newAdmin->balance - $newPeriod->price
+            ]);
+            
+            // If there was a previous admin, refund their balance
+            if ($customer->admin_id) {
+                $oldAdmin = Admin::find($customer->admin_id);
+                if ($oldAdmin) {
+                    $oldAdmin->update([
+                        'balance' => $oldAdmin->balance + $oldPeriod->price
+                    ]);
+                }
+            }
+        }
+        // If only plan is changing, update the current admin's balance
+        else if ($planChanged && $customer->admin_id) {
+            $admin = Admin::find($customer->admin_id);
+            if (!$admin) {
+                return response()->json(['message' => 'Admin not found'], 404);
+            }
+            
+            // Calculate price difference
+            $priceDifference = $newPeriod->price - $oldPeriod->price;
+            
+            // If new plan is more expensive, check if admin has enough balance
+            if ($priceDifference > 0 && $admin->balance < $priceDifference) {
+                return response()->json(['message' => 'Insufficient balance for plan upgrade'], 400);
+            }
+            
+            // Update admin's balance
+            $admin->update([
+                'balance' => $admin->balance - $priceDifference
+            ]);
+        }
 
         $customer->update($data);
 
@@ -135,11 +231,67 @@ public function bulkUpdatePaymentStatus(Request $request)
         'customer_ids.*' => 'exists:customers,id',
         'admin_id' => 'required|exists:admins,id',
     ]);
-
+    
+    // Get the new admin
+    $newAdmin = Admin::find($request->admin_id);
+    if (!$newAdmin) {
+        return response()->json(['message' => 'Admin not found'], 404);
+    }
+    
+    // Get all affected customers
+    $customers = Customer::whereIn('id', $request->customer_ids)->get();
+    
+    // Calculate total price for all customers
+    $totalPrice = 0;
+    foreach ($customers as $customer) {
+        $period = Period::find($customer->plan_id);
+        if ($period) {
+            $totalPrice += $period->price;
+        }
+    }
+    
+    // Check if new admin has enough balance
+    if ($newAdmin->balance < $totalPrice) {
+        return response()->json(['message' => 'Insufficient balance for the selected admin'], 400);
+    }
+    
+    // Process each customer
+    foreach ($customers as $customer) {
+        // Skip if admin is already the same
+        if ($customer->admin_id == $request->admin_id) {
+            continue;
+        }
+        
+        $period = Period::find($customer->plan_id);
+        if (!$period) {
+            continue; // Skip if period not found
+        }
+        
+        // Decrease new admin's balance
+        $newAdmin->balance -= $period->price;
+        
+        // If there was a previous admin, refund their balance
+        if ($customer->admin_id) {
+            $oldAdmin = Admin::find($customer->admin_id);
+            if ($oldAdmin) {
+                $oldAdmin->update([
+                    'balance' => $oldAdmin->balance + $period->price
+                ]);
+            }
+        }
+    }
+    
+    // Save the new admin's updated balance
+    $newAdmin->save();
+    
+    // Update all customers at once
     Customer::whereIn('id', $request->customer_ids)
         ->update(['admin_id' => $request->admin_id]);
 
-    return response()->json(['message' => 'Admin updated successfully.']);
+    return response()->json([
+        'message' => 'Admin updated successfully and balance adjusted',
+        'admin' => $newAdmin
+    ]);
 }
 
 public function bulkDeleteSelected(Request $request)
